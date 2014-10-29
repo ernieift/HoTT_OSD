@@ -199,6 +199,7 @@ void loop() {
   for (int y=0;y<GFX_VRES;y++) {
     sp(0,y,INVERT);
     sp(GFX_HRES-1,y,INVERT);
+    sp(y,y,INVERT);
   }
 
   while (1) {

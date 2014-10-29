@@ -29,7 +29,7 @@
 #define delay1()   __asm__("nop\n\t")
 
 volatile int scanLine;
-unsigned char gfx_buffer[GFX_HRES*GFX_VRES/8];
+volatile byte gfx_buffer[GFX_HRES*GFX_VRES/8];
 
 void detectframe() {
   scanLine = 0;
@@ -40,52 +40,46 @@ void detectline() {
 
 #if ((GFX_SCALE_X == 1) && (GFX_SCALE_Y == 1))
   if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES)) {
-    // Used to align the graphic
-    _delay_loop_1(GFX_ALIGN);
+    _delay_loop_1(GFX_HALIGN);
     int p = (scanLine - GFX_VSTART) * (GFX_HRES/8);
     for (int i=0; i < GFX_HRES/8; i++) {
       SPDR = gfx_buffer[p++];
-      delay9();
+      delay2();
     }
-    delay3();
-    SPDR = 0;
-  }
-#elif ((GFX_SCALE_X == 2) && (GFX_SCALE_Y == 1))
-  if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES)) {
-    // Used to align the graphic
-    _delay_loop_1(GFX_ALIGN/2);
-    int p = (scanLine - GFX_VSTART) * (GFX_HRES/8);
-    for (int i=0; i < GFX_HRES/8; i++) {
-      SPDR = gfx_buffer[p++];
-      _delay_loop_1(8);
-      delay1();
-    }
-    delay10();
+    delay9();
     SPDR = 0;
   }
 #elif ((GFX_SCALE_X == 1) && (GFX_SCALE_Y == 2))
   if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES * 2)) {
-    // Used to align the graphic
-    _delay_loop_1(GFX_ALIGN);
+    _delay_loop_1(GFX_HALIGN);
     int p = ((scanLine - GFX_VSTART) >> 1) * (GFX_HRES/8);
     for (int i=0; i < GFX_HRES/8; i++) {
       SPDR = gfx_buffer[p++];
-      delay9();
-      }
-      delay3();
-      SPDR = 0;
+      delay2();
+    }
+    delay9();
+    SPDR = 0;
+  }
+#elif ((GFX_SCALE_X == 2) && (GFX_SCALE_Y == 1))
+  if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES)) {
+    _delay_loop_1(GFX_HALIGN);
+    int p = (scanLine - GFX_VSTART) * (GFX_HRES/8);
+    for (int i=0; i < GFX_HRES/8; i++) {
+      SPDR = gfx_buffer[p++];
+      _delay_loop_1(6);
+    }
+    delay9();
+    SPDR = 0;
   }
 #elif ((GFX_SCALE_X == 2) && (GFX_SCALE_Y == 2))
   if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES * 2)) {
-    // Used to align the graphic
-    _delay_loop_1(GFX_ALIGN/2);
+    _delay_loop_1(GFX_HALIGN);
     int p = ((scanLine - GFX_VSTART) >> 1) * (GFX_HRES/8);
     for (int i=0; i < GFX_HRES/8; i++) {
       SPDR = gfx_buffer[p++];
-      _delay_loop_1(8);
-      delay1();
+      _delay_loop_1(6);
     }
-    delay3();
+    delay9();
     SPDR = 0;
   }
 #endif
