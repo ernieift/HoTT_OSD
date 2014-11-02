@@ -18,10 +18,13 @@
 // graphic display settings
 #define GFX_VRES 64
 #define GFX_HRES 128
-#define GFX_VSTART 90 // 22..220 HighRes, 22..175 LoRes
-#define GFX_HALIGN 2  // 1..156 HighRes, 1..90 LoRes
-#define GFX_SCALE_X 2
-#define GFX_SCALE_Y 2
+#define GFX_MODE_MAX 3
+
+#define GFX_MODE 2
+#define GFX_XSTART 2  // 1..156 HighRes, 1..90 LoRes
+#define GFX_YSTART 90 // 22..220 HighRes, 22..175 LoRes
+
+#define GFX_DEMO
 
 //========================================================================
 // END SETUP

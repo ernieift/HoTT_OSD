@@ -45,6 +45,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>
 /* ***************** DEFINITIONS *******************/
 
 pollserial pserial;
+extern volatile int scanLine;
 extern unsigned char gfx_buffer[];
 
 #define BLACK	0
@@ -156,10 +157,15 @@ void setup() {
 
   // init controller specific
 #if (CONTROLLER == 3)
+  digitalWrite(MAX7456_SELECT,  HIGH);
+  delay(500);
   // Prepare MAX7456 for displaying
   OSD osd;
   osd.setMode(1);
   osd.init();
+  delay(100);
+  digitalWrite(MAX7456_SELECT,  HIGH);
+  delay(500);
   osd.clear();
   osd.setPanel(1,1);
   osd.openPanel();
@@ -173,6 +179,7 @@ void setup() {
   osd.write('D');
   osd.write('|');
   osd.closePanel();
+  delay(500);
   digitalWrite(MAX7456_SELECT,  HIGH);
 #endif
 
@@ -191,6 +198,15 @@ void setup() {
 /* ***************** MAIN LOOP *******************/
 
 void loop() {
+
+#ifdef GFX_DEMO
+  int mode = GFX_MODE;
+  int x = GFX_XSTART;
+  int y = GFX_YSTART;
+  int dx = 1;
+  int dy = 1;
+#endif
+
   for (int x=0;x<GFX_HRES;x++) {
     sp(x,0,INVERT);
     sp(x,GFX_VRES-1,INVERT);
@@ -205,6 +221,31 @@ void loop() {
   while (1) {
     GetHoTT();
     delay_ms(40);
+
+#ifdef GFX_DEMO
+    while (scanLine != 5);
+    x = x + dx;
+    if (x > 70) {
+      dx = -1;
+      mode++;
+    } else if (x < 2) {
+      dx = 1;
+      mode++;
+    }
+
+    y = y + dy;
+    if (y > 150) {
+      dy = -1;
+      mode++;
+    } else if (y < 30) {
+      dy = 1;
+      mode++;
+    }
+
+    mode %= 4;
+    output_mode(mode,x,y);
+#endif
+
   }
 }
 

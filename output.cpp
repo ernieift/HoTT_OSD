@@ -29,6 +29,9 @@
 #define delay1()   __asm__("nop\n\t")
 
 volatile int scanLine;
+volatile int startline;
+volatile int linedelay;
+volatile byte gfx_mode;
 volatile byte gfx_buffer[GFX_HRES*GFX_VRES/8];
 
 void detectframe() {
@@ -38,51 +41,51 @@ void detectframe() {
 void detectline() {
   little_delay(); // This is used to adjust to timing when using SimpleOSD instead of Arduino   
 
-#if ((GFX_SCALE_X == 1) && (GFX_SCALE_Y == 1))
-  if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES)) {
-    _delay_loop_1(GFX_HALIGN);
-    int p = (scanLine - GFX_VSTART) * (GFX_HRES/8);
-    for (int i=0; i < GFX_HRES/8; i++) {
-      SPDR = gfx_buffer[p++];
-      delay2();
+  if (gfx_mode == 0) {
+    if (scanLine >= startline && scanLine < (startline + GFX_VRES)) {
+      _delay_loop_1(linedelay);
+      int p = (scanLine - startline) * (GFX_HRES/8);
+      for (int i=0; i < GFX_HRES/8; i++) {
+        SPDR = gfx_buffer[p++];
+        delay2();
+      }
+      delay9();
+      SPDR = 0;
     }
-    delay9();
-    SPDR = 0;
-  }
-#elif ((GFX_SCALE_X == 1) && (GFX_SCALE_Y == 2))
-  if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES * 2)) {
-    _delay_loop_1(GFX_HALIGN);
-    int p = ((scanLine - GFX_VSTART) >> 1) * (GFX_HRES/8);
-    for (int i=0; i < GFX_HRES/8; i++) {
-      SPDR = gfx_buffer[p++];
-      delay2();
+  } else if (gfx_mode == 1) {
+    if (scanLine >= startline && scanLine < (startline + GFX_VRES * 2)) {
+      _delay_loop_1(linedelay);
+      int p = ((scanLine - startline) >> 1) * (GFX_HRES/8);
+      for (int i=0; i < GFX_HRES/8; i++) {
+        SPDR = gfx_buffer[p++];
+        delay2();
+      }
+      delay9();
+      SPDR = 0;
     }
-    delay9();
-    SPDR = 0;
-  }
-#elif ((GFX_SCALE_X == 2) && (GFX_SCALE_Y == 1))
-  if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES)) {
-    _delay_loop_1(GFX_HALIGN);
-    int p = (scanLine - GFX_VSTART) * (GFX_HRES/8);
-    for (int i=0; i < GFX_HRES/8; i++) {
-      SPDR = gfx_buffer[p++];
-      _delay_loop_1(6);
+  } else if (gfx_mode == 2) {
+    if (scanLine >= startline && scanLine < (startline + GFX_VRES)) {
+      _delay_loop_1(linedelay);
+      int p = (scanLine - startline) * (GFX_HRES/8);
+      for (int i=0; i < GFX_HRES/8; i++) {
+        SPDR = gfx_buffer[p++];
+        _delay_loop_1(6);
+      }
+      delay9();
+      SPDR = 0;
     }
-    delay9();
-    SPDR = 0;
-  }
-#elif ((GFX_SCALE_X == 2) && (GFX_SCALE_Y == 2))
-  if (scanLine >= GFX_VSTART && scanLine < (GFX_VSTART + GFX_VRES * 2)) {
-    _delay_loop_1(GFX_HALIGN);
-    int p = ((scanLine - GFX_VSTART) >> 1) * (GFX_HRES/8);
-    for (int i=0; i < GFX_HRES/8; i++) {
-      SPDR = gfx_buffer[p++];
-      _delay_loop_1(6);
+  } else if (gfx_mode == 3) {
+    if (scanLine >= startline && scanLine < (startline + GFX_VRES * 2)) {
+      _delay_loop_1(linedelay);
+      int p = ((scanLine - startline) >> 1) * (GFX_HRES/8);
+      for (int i=0; i < GFX_HRES/8; i++) {
+        SPDR = gfx_buffer[p++];
+        _delay_loop_1(6);
+      }
+      delay9();
+      SPDR = 0;
     }
-    delay9();
-    SPDR = 0;
   }
-#endif
 
   // Increase line count.
   if (CONTROLLER == 3)
@@ -108,11 +111,7 @@ void output_setup() {
     (1<<CPOL)| // Doesnt really matter, its the SCK polarity
     (1<<CPHA); //
 
-#if (GFX_SCALE_X == 1)
-  SPSR = (1<<SPI2X); // SPI double speed - we want 8 mhz output speed.
-#else
-  SPSR = (0<<SPI2X); // SPI single speed - we want 4 mhz output speed.
-#endif
+  output_mode(GFX_MODE, GFX_XSTART, GFX_YSTART);
   SPDR =0b00000000; // IMPORTANT.. The SPI will idle random at low or high in the beginning. If it idles high you will get black screen = bad idea in FPV.
   // It will always idle at the last bit sent, so always be sure the last bit is 0. The main-loop and end of each line will always send 8 zeros - so it should
   // be pretty safe.
@@ -154,4 +153,31 @@ void output_setup() {
   pinMode(13,INPUT);
   digitalWrite(13,HIGH); // Turn on the led
 #endif
+}
+
+void output_mode(int mode, int xstart, int ystart) {
+  switch (mode) {
+    case 0: // x_scale = 1, y_scale = 1
+      SPSR = (1<<SPI2X); // SPI double speed - we want 8 mhz output speed.
+      gfx_mode = 0;
+      break;
+    case 1: // x_scale = 1, y_scale = 2 
+      SPSR = (1<<SPI2X); // SPI double speed - we want 8 mhz output speed.
+      gfx_mode = 1;
+      break;
+    case 2: // x_scale = 2, y_scale = 1
+      SPSR = (0<<SPI2X); // SPI single speed - we want 4 mhz output speed.
+      gfx_mode = 2;
+      break;
+    case 3: // x_scale = 2, y_scale = 2
+      SPSR = (0<<SPI2X); // SPI single speed - we want 4 mhz output speed.
+      gfx_mode = 3;
+      break;
+    default: // use mode 0
+      SPSR = (1<<SPI2X); // SPI double speed - we want 8 mhz output speed.
+      gfx_mode = 0;
+  }
+
+  linedelay = (xstart > 0) ? xstart : 1;
+  startline = (ystart > 0) ? ystart : 1;
 }
