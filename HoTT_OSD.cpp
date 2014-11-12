@@ -141,10 +141,6 @@ void GetHoTT() {
 
 void setup() {
   // Set pin-modes
-  pinMode(10,OUTPUT);
-  pinMode(11,OUTPUT); 
-  pinMode(12,INPUT);
-  pinMode(13,OUTPUT);
   pinMode(0,INPUT);  
   pinMode(1,INPUT);
   pinMode(2,INPUT);
@@ -157,15 +153,12 @@ void setup() {
 
   // init controller specific
 #if (CONTROLLER == 3)
-  digitalWrite(MAX7456_SELECT,  HIGH);
-  delay(500);
   // Prepare MAX7456 for displaying
   OSD osd;
-  osd.setMode(1);
+  osd.setMode(PAL);
   osd.init();
   delay(100);
   digitalWrite(MAX7456_SELECT,  HIGH);
-  delay(500);
   osd.clear();
   osd.setPanel(1,1);
   osd.openPanel();
@@ -179,7 +172,6 @@ void setup() {
   osd.write('D');
   osd.write('|');
   osd.closePanel();
-  delay(500);
   digitalWrite(MAX7456_SELECT,  HIGH);
 #endif
 

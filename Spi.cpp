@@ -14,6 +14,7 @@ SPI::SPI()
   pinMode(SCK_PIN, OUTPUT);
   pinMode(MOSI_PIN, OUTPUT);
   pinMode(MISO_PIN, INPUT);
+  pinMode(SS_PIN, OUTPUT);
 
   // enable SPI Master, MSB, SPI mode 0, FOSC/4
   mode(0);

@@ -68,10 +68,10 @@
 //If PAL
 #ifdef isPAL
   #define MAX7456_screen_size 480 //16x30
-  #define MAX7456_screen_rows 15
+  #define MAX7456_screen_rows 16
 #else
   #define MAX7456_screen_size 390 //13x30
-  #define MAX7456_screen_rows 12
+  #define MAX7456_screen_rows 13
 #endif
 
 //------------------ the OSD class -----------------------------------------------
